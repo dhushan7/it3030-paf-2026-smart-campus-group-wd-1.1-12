@@ -26,7 +26,7 @@ public class ResourceService {
         return repository.findByTypeContainingIgnoreCase(type);
     }
 
-    public Resource updateResource(Long id, Resource updatedResource) {
+    public Resource updateResource(String id, Resource updatedResource) {
         return repository.findById(id).map(resource -> {
             resource.setName(updatedResource.getName());
             resource.setType(updatedResource.getType());
@@ -38,7 +38,7 @@ public class ResourceService {
         }).orElseThrow(() -> new RuntimeException("Resource not found"));
     }
 
-    public void deleteResource(Long id) {
+    public void deleteResource(String id) {
         repository.deleteById(id);
     }
 }
