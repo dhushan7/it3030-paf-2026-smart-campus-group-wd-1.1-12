@@ -33,12 +33,12 @@ public class ResourceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Resource> updateResource(@PathVariable Long id, @Valid @RequestBody Resource resource) {
+    public ResponseEntity<Resource> updateResource(@PathVariable String id, @Valid @RequestBody Resource resource) {
         return ResponseEntity.ok(service.updateResource(id, resource));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable String id) {
         service.deleteResource(id);
         return ResponseEntity.noContent().build();
     }
