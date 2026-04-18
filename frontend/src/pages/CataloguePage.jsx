@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/axiosClient';
-import ResourceFormModal from '../components/resources/ResourceFormModal';
+import ResourceFormModal from '../resources/ResourceFormModal';
 import { Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 

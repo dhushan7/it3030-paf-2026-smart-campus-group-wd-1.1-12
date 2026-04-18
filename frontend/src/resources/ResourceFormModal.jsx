@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../../api/axiosClient";
-import FloatingInput from "../common/FloatingInput";
+import { api } from "../api/axiosClient";
+import FloatingInput from "../components/common/FloatingInput";
 import toast from "react-hot-toast";
 
 const ResourceFormModal = ({ resource, closeModal, onResourceAdded }) => {
