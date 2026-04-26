@@ -23,6 +23,10 @@ const Navbar = () => {
             <LayoutGrid size={18} /> Catalogue
           </Link>
 
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
+          </Link>
+
           <Link className="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors" to="/dashboard">
             <Home size={18} /> Dashboard
           </Link>
@@ -47,6 +51,9 @@ const Navbar = () => {
         <div className="md:hidden px-6 pb-6 pt-2 space-y-4 bg-[#0f1115]/95 backdrop-blur-xl border-t border-white/10">
           <Link onClick={() => setOpen(false)} to="/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <LayoutGrid size={20} /> Catalogue
+          </Link>
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
           </Link>
 
           <Link onClick={() => setOpen(false)} to="/dashboard" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
