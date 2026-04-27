@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api/client";
 import {
+  buildDateTime,
   formatDate,
   formatTime,
   getStatusBadgeClass,
@@ -19,6 +20,34 @@ export default function BookingList() {
   const [studentId, setStudentId] = useState(loadStudentId());
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [editingBookingId, setEditingBookingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    resourceId: "",
+    bookingDate: "",
+    startClock: "",
+    endClock: "",
+    purpose: "",
+    expectedAttendees: "",
+  });
+
+  const toDateInputValue = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const toTimeInputValue = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    return `${hour}:${minute}`;
+  };
 
   const fetchBookings = async (selectedStudentId = studentId) => {
     if (!selectedStudentId) {
@@ -70,6 +99,92 @@ export default function BookingList() {
       setError("");
     } catch (err) {
       setError(err.response?.data?.message ?? "Error cancelling booking.");
+    }
+  };
+
+  const startEditing = (booking) => {
+    setEditingBookingId(booking.id);
+    setEditForm({
+      resourceId: booking.resourceId,
+      bookingDate: toDateInputValue(booking.startTime),
+      startClock: toTimeInputValue(booking.startTime),
+      endClock: toTimeInputValue(booking.endTime),
+      purpose: booking.purpose ?? "",
+      expectedAttendees:
+        booking.expectedAttendees === null || booking.expectedAttendees === undefined
+          ? ""
+          : String(booking.expectedAttendees),
+    });
+    setMessage("");
+    setError("");
+  };
+
+  const cancelEditing = () => {
+    setEditingBookingId(null);
+    setEditForm({
+      resourceId: "",
+      bookingDate: "",
+      startClock: "",
+      endClock: "",
+      purpose: "",
+      expectedAttendees: "",
+    });
+  };
+
+  const saveBookingUpdate = async (bookingId) => {
+    if (!editForm.bookingDate || !editForm.startClock || !editForm.endClock) {
+      setError("Booking date, start time, and end time are required.");
+      return;
+    }
+
+    if (editForm.endClock <= editForm.startClock) {
+      setError("End time must be later than start time.");
+      return;
+    }
+
+    if (!editForm.purpose.trim()) {
+      setError("Purpose cannot be blank.");
+      return;
+    }
+
+    try {
+      const payload = {
+        studentId,
+        resourceId: editForm.resourceId,
+        startTime: buildDateTime(editForm.bookingDate, editForm.startClock),
+        endTime: buildDateTime(editForm.bookingDate, editForm.endClock),
+        purpose: editForm.purpose.trim(),
+        expectedAttendees: editForm.expectedAttendees ? Number(editForm.expectedAttendees) : null,
+      };
+
+      const response = await api.put(`/bookings/${bookingId}`, payload, {
+        params: { studentId },
+      });
+
+      setBookings((currentBookings) =>
+        currentBookings.map((booking) => (booking.id === bookingId ? response.data : booking))
+      );
+      setMessage("Pending booking updated successfully.");
+      setError("");
+      cancelEditing();
+    } catch (err) {
+      setError(err.response?.data?.message ?? "Error updating booking.");
+    }
+  };
+
+  const deletePendingBooking = async (bookingId) => {
+    try {
+      await api.delete(`/bookings/${bookingId}`, {
+        params: { studentId },
+      });
+      setBookings((currentBookings) => currentBookings.filter((booking) => booking.id !== bookingId));
+      setMessage("Pending booking deleted successfully.");
+      setError("");
+      if (editingBookingId === bookingId) {
+        cancelEditing();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message ?? "Error deleting booking.");
     }
   };
 
@@ -149,7 +264,24 @@ export default function BookingList() {
                   </td>
                   <td className="px-4 py-3">{booking.reviewReason || "-"}</td>
                   <td className="px-4 py-3">
-                    {booking.status === "APPROVED" ? (
+                    {booking.status === "PENDING" ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startEditing(booking)}
+                          className="rounded bg-cyan-600 px-3 py-1 text-white transition-colors hover:bg-cyan-700"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deletePendingBooking(booking.id)}
+                          className="rounded bg-rose-600 px-3 py-1 text-white transition-colors hover:bg-rose-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ) : booking.status === "APPROVED" ? (
                       <button
                         type="button"
                         onClick={() => cancelBooking(booking.id)}
@@ -167,6 +299,85 @@ export default function BookingList() {
           </table>
         </div>
       )}
+
+      {editingBookingId ? (
+        <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-5">
+          <h3 className="text-lg font-semibold text-cyan-200">Edit Pending Booking</h3>
+          <p className="mt-1 text-xs text-cyan-100/80">
+            Updates are allowed only while booking status is pending.
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="text-sm text-gray-200">
+              Booking Date
+              <input
+                type="date"
+                value={editForm.bookingDate}
+                onChange={(e) => setEditForm({ ...editForm, bookingDate: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white"
+              />
+            </label>
+
+            <label className="text-sm text-gray-200">
+              Purpose
+              <input
+                type="text"
+                value={editForm.purpose}
+                onChange={(e) => setEditForm({ ...editForm, purpose: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white"
+              />
+            </label>
+
+            <label className="text-sm text-gray-200">
+              Start Time
+              <input
+                type="time"
+                value={editForm.startClock}
+                onChange={(e) => setEditForm({ ...editForm, startClock: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white"
+              />
+            </label>
+
+            <label className="text-sm text-gray-200">
+              End Time
+              <input
+                type="time"
+                value={editForm.endClock}
+                onChange={(e) => setEditForm({ ...editForm, endClock: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white"
+              />
+            </label>
+
+            <label className="text-sm text-gray-200 md:col-span-2">
+              Expected Attendees (optional)
+              <input
+                type="number"
+                min="1"
+                value={editForm.expectedAttendees}
+                onChange={(e) => setEditForm({ ...editForm, expectedAttendees: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white"
+              />
+            </label>
+          </div>
+
+          <div className="mt-4 flex gap-3">
+            <button
+              type="button"
+              onClick={() => saveBookingUpdate(editingBookingId)}
+              className="rounded bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={cancelEditing}
+              className="rounded bg-slate-700 px-4 py-2 text-white transition-colors hover:bg-slate-600"
+            >
+              Cancel Edit
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
