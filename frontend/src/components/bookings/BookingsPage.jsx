@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import BookingFormStyled from "./BookingFormStyled";
 import BookingList from "./BookingList";
 import BookingRequests from "./BookingRequests";
@@ -30,6 +31,21 @@ const sections = [
 ];
 
 export default function BookingsPage() {
+  const [activeSection, setActiveSection] = useState(sections[0].id);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      const hash = window.location.hash?.replace("#", "");
+      if (hash && sections.some((section) => section.id === hash)) {
+        setActiveSection(hash);
+      }
+    };
+
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, []);
+
   return (
     <div className="space-y-8">
       <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),_transparent_32%),rgba(15,23,42,0.82)] p-8 shadow-2xl backdrop-blur-xl">
@@ -63,17 +79,27 @@ export default function BookingsPage() {
         </div>
       </section>
 
-      <div className="sticky top-20 z-20 overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/75 px-3 py-3 backdrop-blur-xl">
-        <div className="flex min-w-max gap-3">
+      <div className="sticky top-20 z-20 rounded-[1.4rem] border border-white/10 bg-[linear-gradient(120deg,rgba(8,16,42,0.92),rgba(20,18,52,0.9))] p-2 shadow-[0_18px_40px_rgba(7,12,28,0.45)] backdrop-blur-xl">
+        <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">
+          Quick Navigation
+        </div>
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max gap-3">
           {sections.map((section) => (
             <a
               key={section.id}
               href={`#${section.id}`}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-cyan-400/40 hover:text-white"
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                activeSection === section.id
+                  ? "border-cyan-300/70 bg-cyan-400/20 text-white shadow-[0_0_0_1px_rgba(103,232,249,0.25)_inset]"
+                  : "border-white/10 bg-white/5 text-slate-200 hover:border-cyan-400/40 hover:text-white"
+              }`}
+              onClick={() => setActiveSection(section.id)}
             >
               {section.title}
             </a>
           ))}
+          </div>
         </div>
       </div>
 
