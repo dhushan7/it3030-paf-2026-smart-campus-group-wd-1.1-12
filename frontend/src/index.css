@@ -25,6 +25,11 @@ input[type="number"] {
 
 .booking-number-input::-webkit-outer-spin-button,
 .booking-number-input::-webkit-inner-spin-button {
-  opacity: 1;
-  filter: invert(0.85);
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.booking-number-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

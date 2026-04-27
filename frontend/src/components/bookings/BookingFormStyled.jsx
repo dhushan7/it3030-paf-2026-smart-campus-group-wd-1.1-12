@@ -39,7 +39,34 @@ const FALLBACK_RESOURCES = [
     availabilityWindow: "Weekdays 08:00-17:00",
     status: "ACTIVE",
   },
+  {
+    name: "Projector Kit",
+    type: "EQUIPMENT",
+    capacity: 1,
+    location: "Equipment Store Room",
+    availabilityWindow: "Weekdays 08:30-16:30",
+    status: "ACTIVE",
+  },
+  {
+    name: "Portable Speaker Set",
+    type: "EQUIPMENT",
+    capacity: 1,
+    location: "Equipment Store Room",
+    availabilityWindow: "Weekdays 08:30-16:30",
+    status: "ACTIVE",
+  },
 ];
+
+function getFallbackResources() {
+  return FALLBACK_RESOURCES.map((resource, index) => ({
+    ...resource,
+    id: `fallback-resource-${index + 1}`,
+  }));
+}
+
+function isFallbackResourceId(resourceId) {
+  return typeof resourceId === "string" && resourceId.startsWith("fallback-resource-");
+}
 
 function normalizeResourceStatus(status) {
   const normalizedStatus = (status ?? "").trim().toUpperCase();
@@ -101,6 +128,7 @@ export default function BookingFormStyled() {
   const normalizeResources = (resourceList) =>
     (Array.isArray(resourceList) ? resourceList : []).map((resource) => ({
       ...resource,
+      id: resource.id ?? resource._id ?? resource.resourceId ?? "",
       status: normalizeResourceStatus(resource.status),
       type: normalizeResourceType(resource.type),
       originalType: resource.type ?? "",
@@ -126,15 +154,17 @@ export default function BookingFormStyled() {
         normalizedResources = normalizeResources(seededResponse.data);
       }
 
-      setResources(normalizedResources);
-
       if (normalizedResources.length === 0) {
-        setResourceError("No resources available yet. Click \"Load default resources\".");
+        setResources(normalizeResources(getFallbackResources()));
+        setResourceError("");
+      } else {
+        setResources(normalizedResources);
+        setResourceError("");
       }
     } catch (loadError) {
       console.error(loadError);
-      setResources([]);
-      setResourceError("Unable to load resources. Please check backend on port 8087.");
+      setResources(normalizeResources(getFallbackResources()));
+      setResourceError("");
     } finally {
       setIsLoadingResources(false);
     }
@@ -154,10 +184,7 @@ export default function BookingFormStyled() {
 
   const visibleResources = !form.resourceType
     ? resources
-    : [
-      ...resources.filter((resource) => isTypeMatch(resource.type, form.resourceType)),
-      ...resources.filter((resource) => !isTypeMatch(resource.type, form.resourceType)),
-    ];
+    : resources.filter((resource) => isTypeMatch(resource.type, form.resourceType));
   const selectedResource = visibleResources.find((resource) => resource.id === form.resourceId) ?? null;
 
   const today = new Date();
@@ -231,9 +258,45 @@ export default function BookingFormStyled() {
         return;
       }
 
+      let resolvedResourceId = form.resourceId;
+      if (isFallbackResourceId(form.resourceId)) {
+        const existingResourcesResponse = await api.get("/resources");
+        const existingResources = normalizeResources(existingResourcesResponse.data);
+
+        const matchedResource = existingResources.find((resource) =>
+          resource.name === selectedResource?.name
+          && normalizeResourceType(resource.type) === normalizeResourceType(selectedResource?.type)
+        );
+
+        if (matchedResource?.id) {
+          resolvedResourceId = matchedResource.id;
+        } else if (selectedResource) {
+          const createdResourceResponse = await api.post("/resources", {
+            name: selectedResource.name,
+            type: selectedResource.type,
+            capacity: selectedResource.capacity,
+            location: selectedResource.location,
+            availabilityWindow: selectedResource.availabilityWindow,
+            status: selectedResource.status,
+          });
+
+          const createdResource = normalizeResources([createdResourceResponse.data])[0];
+          if (!createdResource?.id) {
+            throw new Error("Resource could not be prepared for booking.");
+          }
+
+          resolvedResourceId = createdResource.id;
+        }
+      }
+
+      if (!resolvedResourceId || isFallbackResourceId(resolvedResourceId)) {
+        setError("Selected resource is not ready in backend. Please reload resources and try again.");
+        return;
+      }
+
       const payload = {
         studentId: trimmedStudentId,
-        resourceId: form.resourceId,
+        resourceId: resolvedResourceId,
         startTime,
         endTime,
         purpose: trimmedPurpose,
@@ -255,7 +318,7 @@ export default function BookingFormStyled() {
         expectedAttendees: "",
       }));
     } catch (err) {
-      setError(err.response?.data?.message ?? "Unable to submit booking request.");
+      setError(err.response?.data?.message ?? err.message ?? "Unable to submit booking request.");
     }
   };
 
@@ -274,30 +337,6 @@ export default function BookingFormStyled() {
         onSubmit={handleSubmit}
         className="space-y-6 rounded-2xl border border-white/10 bg-white/10 p-8 shadow-lg backdrop-blur-md"
       >
-        {resourceError ? (
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span>{resourceError}</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => loadResources(false)}
-                  className="rounded bg-slate-800 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-700"
-                >
-                  Retry
-                </button>
-                <button
-                  type="button"
-                  onClick={() => loadResources(true)}
-                  className="rounded bg-cyan-700 px-3 py-1 text-xs font-semibold text-white hover:bg-cyan-600"
-                >
-                  Load default resources
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
         <div className="grid gap-6 md:grid-cols-2">
           <label className="block text-sm font-medium text-gray-200">
             Student ID
@@ -437,7 +476,7 @@ export default function BookingFormStyled() {
                 step="1"
                 max={selectedResource?.capacity ?? undefined}
                 value={form.expectedAttendees}
-                placeholder="Optional when not applicable"
+                placeholder="attendees count"
                 onChange={(e) => setForm({ ...form, expectedAttendees: e.target.value })}
                 className="booking-number-input w-full bg-gray-900 px-3 py-2 text-white focus:outline-none"
               />
