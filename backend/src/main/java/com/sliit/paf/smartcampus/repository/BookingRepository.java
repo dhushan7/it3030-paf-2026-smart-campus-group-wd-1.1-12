@@ -13,6 +13,15 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
            " 'startTime': { $lt: ?2 }, 'endTime': { $gt: ?1 } }")
     List<Booking> findActiveOverlappingBookings(String resourceId, LocalDateTime start, LocalDateTime end);
 
+    @Query("{ '_id': { $ne: ?0 }, 'resourceId': ?1, 'status': { $in: ['PENDING', 'APPROVED'] }, " +
+           " 'startTime': { $lt: ?3 }, 'endTime': { $gt: ?2 } }")
+    List<Booking> findActiveOverlappingBookingsExcludingId(
+            String bookingId,
+            String resourceId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
     @Query("{ 'resourceId': ?0, 'status': 'APPROVED', " +
            " 'startTime': { $lt: ?2 }, 'endTime': { $gt: ?1 } }")
     List<Booking> findOverlappingApprovedBookings(String resourceId, LocalDateTime start, LocalDateTime end);

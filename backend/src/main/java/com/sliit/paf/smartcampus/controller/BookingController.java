@@ -2,12 +2,14 @@ package com.sliit.paf.smartcampus.controller;
 
 import com.sliit.paf.smartcampus.dto.BookingDecisionRequest;
 import com.sliit.paf.smartcampus.dto.BookingResponse;
+import com.sliit.paf.smartcampus.dto.MessageResponse;
 import com.sliit.paf.smartcampus.model.Booking;
 import com.sliit.paf.smartcampus.service.BookingService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,5 +64,23 @@ public class BookingController {
     @PutMapping("/{id}/cancel")
     public BookingResponse cancel(@PathVariable String id, @RequestParam String studentId) {
         return service.cancelBooking(id, studentId);
+    }
+
+    @PutMapping("/{id}")
+    public BookingResponse updatePending(
+            @PathVariable String id,
+            @RequestParam String studentId,
+            @Valid @RequestBody Booking booking
+    ) {
+        return service.updatePendingBooking(id, studentId, booking);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponse> deletePending(
+            @PathVariable String id,
+            @RequestParam String studentId
+    ) {
+        service.deletePendingBooking(id, studentId);
+        return ResponseEntity.ok(new MessageResponse("Booking deleted successfully."));
     }
 }

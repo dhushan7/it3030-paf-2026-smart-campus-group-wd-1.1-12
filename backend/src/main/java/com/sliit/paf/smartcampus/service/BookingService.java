@@ -124,6 +124,52 @@ public class BookingService {
         return toResponse(repository.save(booking));
     }
 
+    public BookingResponse updatePendingBooking(String bookingId, String studentId, Booking updatedBooking) {
+        if (isBlank(studentId)) {
+            throw new IllegalArgumentException("Student ID is required to update a booking.");
+        }
+
+        Booking existingBooking = getBookingById(bookingId);
+        ensureStatus(existingBooking, STATUS_PENDING, "Only pending bookings can be updated.");
+        ensureOwner(existingBooking, studentId);
+
+        normalizeBookingFields(updatedBooking);
+        validateBookingRequest(updatedBooking);
+        Resource resource = getResourceOrThrow(updatedBooking.getResourceId());
+        validateResourceRules(updatedBooking, resource);
+
+        List<Booking> conflicts = repository.findActiveOverlappingBookingsExcludingId(
+                existingBooking.getId(),
+                updatedBooking.getResourceId(),
+                updatedBooking.getStartTime(),
+                updatedBooking.getEndTime()
+        );
+
+        if (!conflicts.isEmpty()) {
+            throw new IllegalStateException("Time slot conflict detected for this resource.");
+        }
+
+        existingBooking.setResourceId(updatedBooking.getResourceId());
+        existingBooking.setStartTime(updatedBooking.getStartTime());
+        existingBooking.setEndTime(updatedBooking.getEndTime());
+        existingBooking.setPurpose(updatedBooking.getPurpose());
+        existingBooking.setExpectedAttendees(updatedBooking.getExpectedAttendees());
+        existingBooking.setReviewReason(null);
+
+        return toResponse(repository.save(existingBooking));
+    }
+
+    public void deletePendingBooking(String bookingId, String studentId) {
+        if (isBlank(studentId)) {
+            throw new IllegalArgumentException("Student ID is required to delete a booking.");
+        }
+
+        Booking booking = getBookingById(bookingId);
+        ensureStatus(booking, STATUS_PENDING, "Only pending bookings can be deleted.");
+        ensureOwner(booking, studentId);
+        repository.deleteById(bookingId);
+    }
+
     private void validateBookingRequest(Booking booking) {
         if (isBlank(booking.getStudentId())) {
             throw new IllegalArgumentException("Student ID is required.");
@@ -194,6 +240,12 @@ public class BookingService {
     private void ensureStatus(Booking booking, String expectedStatus, String message) {
         if (!expectedStatus.equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException(message);
+        }
+    }
+
+    private void ensureOwner(Booking booking, String studentId) {
+        if (!studentId.equalsIgnoreCase(booking.getStudentId())) {
+            throw new IllegalArgumentException("You can only modify your own bookings.");
         }
     }
 
