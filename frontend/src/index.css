@@ -16,3 +16,15 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+  color-scheme: dark;
+}
+
+.booking-number-input::-webkit-outer-spin-button,
+.booking-number-input::-webkit-inner-spin-button {
+  opacity: 1;
+  filter: invert(0.85);
+}
