@@ -12,7 +12,8 @@ const FALLBACK_RESOURCES = [
     type: "LECTURE_HALL",
     capacity: 120,
     location: "Main Building - Floor 1",
-    availabilityWindow: "Weekdays 08:00-17:00",
+    availabilityStart: "08:00",
+    availabilityEnd: "17:00",
     status: "ACTIVE",
   },
   {
@@ -20,7 +21,8 @@ const FALLBACK_RESOURCES = [
     type: "LECTURE_HALL",
     capacity: 80,
     location: "Business Faculty - Floor 2",
-    availabilityWindow: "Weekdays 09:00-18:00",
+    availabilityStart: "09:00",
+    availabilityEnd: "18:00",
     status: "ACTIVE",
   },
   {
@@ -28,7 +30,8 @@ const FALLBACK_RESOURCES = [
     type: "MEETING_ROOM",
     capacity: 20,
     location: "Innovation Center",
-    availabilityWindow: "Daily 08:00-20:00",
+    availabilityStart: "08:00",
+    availabilityEnd: "20:00",
     status: "ACTIVE",
   },
   {
@@ -36,7 +39,8 @@ const FALLBACK_RESOURCES = [
     type: "LABORATORY",
     capacity: 40,
     location: "Computing Building - Lab Wing",
-    availabilityWindow: "Weekdays 08:00-17:00",
+    availabilityStart: "08:00",
+    availabilityEnd: "17:00",
     status: "ACTIVE",
   },
   {
@@ -44,7 +48,8 @@ const FALLBACK_RESOURCES = [
     type: "EQUIPMENT",
     capacity: 1,
     location: "Equipment Store Room",
-    availabilityWindow: "Weekdays 08:30-16:30",
+    availabilityStart: "08:30",
+    availabilityEnd: "16:30",
     status: "ACTIVE",
   },
   {
@@ -52,7 +57,8 @@ const FALLBACK_RESOURCES = [
     type: "EQUIPMENT",
     capacity: 1,
     location: "Equipment Store Room",
-    availabilityWindow: "Weekdays 08:30-16:30",
+    availabilityStart: "08:30",
+    availabilityEnd: "16:30",
     status: "ACTIVE",
   },
 ];
@@ -276,7 +282,8 @@ export default function BookingFormStyled() {
             type: selectedResource.type,
             capacity: selectedResource.capacity,
             location: selectedResource.location,
-            availabilityWindow: selectedResource.availabilityWindow,
+            availabilityStart: selectedResource.availabilityStart,
+            availabilityEnd: selectedResource.availabilityEnd,
             status: selectedResource.status,
           });
 
@@ -425,7 +432,10 @@ export default function BookingFormStyled() {
                 <span className="font-medium text-white">Capacity:</span> {selectedResource.capacity ?? "-"}
               </div>
               <div>
-                <span className="font-medium text-white">Availability Window:</span> {selectedResource.availabilityWindow || "Not specified"}
+                <span className="font-medium text-white">Availability:</span>{" "}
+                {selectedResource.availabilityStart && selectedResource.availabilityEnd
+                  ? `${selectedResource.availabilityStart} - ${selectedResource.availabilityEnd}`
+                  : "Not specified"}
               </div>
             </div>
           ) : (

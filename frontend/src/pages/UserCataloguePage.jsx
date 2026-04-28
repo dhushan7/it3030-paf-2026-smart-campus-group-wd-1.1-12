@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/axiosClient';
-import BookingFormModal from '../bookings/BookingFormModel';
 import toast from 'react-hot-toast';
 
 const UserCataloguePage = () => {
@@ -8,9 +8,7 @@ const UserCataloguePage = () => {
     const [filterType, setFilterType] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // ✅ modal state
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedResource, setSelectedResource] = useState(null);
+    const navigate = useNavigate();
 
     const fetchResources = async () => {
         try {
@@ -28,7 +26,7 @@ const UserCataloguePage = () => {
 
             setResources(activeResources);
         } catch (err) {
-            toast.error("Failed to load resources");
+            toast.error('Failed to load resources');
         } finally {
             setLoading(false);
         }
@@ -38,10 +36,11 @@ const UserCataloguePage = () => {
         fetchResources();
     }, [filterType]);
 
-    // ✅ open modal instead of navigate
+    // ✅ NAVIGATE TO BOOKING PAGE
     const handleBook = (resource) => {
-        setSelectedResource(resource);
-        setIsModalOpen(true);
+        navigate('/bookings/new', {
+            state: { resource }
+        });
     };
 
     return (
@@ -61,7 +60,6 @@ const UserCataloguePage = () => {
                     onChange={(e) => setFilterType(e.target.value)}
                     className="px-4 py-2 rounded-full bg-black/20 text-white border border-white/10 focus:ring-2 focus:ring-purple-400 outline-none w-full md:w-64"
                 />
-
             </header>
 
             {/* LOADING */}
@@ -97,7 +95,7 @@ const UserCataloguePage = () => {
                             <p><b>Capacity:</b> {r.capacity} pax</p>
                         </div>
 
-                        {/* STATUS BADGE */}
+                        {/* STATUS */}
                         <span className="inline-block mt-3 px-3 py-1 text-xs rounded-full bg-green-500/20 text-green-400 font-semibold">
                             Available
                         </span>
@@ -114,19 +112,6 @@ const UserCataloguePage = () => {
                 ))}
 
             </div>
-
-            {/* ✅ BOOKING MODAL */}
-            {isModalOpen && (
-                <BookingFormModal
-                    resource={selectedResource}
-                    closeModal={() => {
-                        setIsModalOpen(false);
-                        setSelectedResource(null);
-                    }}
-                    onBooked={fetchResources}
-                />
-            )}
-
         </div>
     );
 };

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,7 +21,8 @@ import java.util.stream.Collectors;
 public class ResourceDataSeeder {
     private static final Logger log = LoggerFactory.getLogger(ResourceDataSeeder.class);
 
-    private static final String DEFAULT_AVAILABILITY_WINDOW = "Daily 08:00-18:00";
+    private static final String DEFAULT_AVAILABILITY_START = "08:00";
+    private static final String DEFAULT_AVAILABILITY_END = "17:00";
     private static final String DEFAULT_LOCATION = "Main Campus";
 
     @Bean
@@ -33,12 +33,12 @@ public class ResourceDataSeeder {
                 normalizeExistingResources(existingResources, resourceRepository);
 
                 List<Resource> defaultResources = List.of(
-                        createResource("Conference Hall 1", "LECTURE_HALL", 120, "Main Building - Floor 1", "Weekdays 08:00-17:00"),
-                        createResource("Business Seminar Hall", "LECTURE_HALL", 80, "Business Faculty - Floor 2", "Weekdays 09:00-18:00"),
-                        createResource("Innovation Hub Room", "MEETING_ROOM", 20, "Innovation Center", "Daily 08:00-20:00"),
-                        createResource("Project Discussion Room", "MEETING_ROOM", 12, "Library Annex", "Daily 08:00-18:00"),
-                        createResource("Computer Lab A", "LABORATORY", 40, "Computing Building - Lab Wing", "Weekdays 08:00-17:00"),
-                        createResource("Multimedia Equipment Kit", "EQUIPMENT", 5, "Equipment Store", "Weekdays 09:00-16:00")
+                        createResource("Conference Hall 1", "LECTURE_HALL", 120, "Main Building - Floor 1", "08:00", "17:00"),
+                        createResource("Business Seminar Hall", "LECTURE_HALL", 80, "Business Faculty - Floor 2", "09:00", "18:00"),
+                        createResource("Innovation Hub Room", "MEETING_ROOM", 20, "Innovation Center", "08:00", "20:00"),
+                        createResource("Project Discussion Room", "MEETING_ROOM", 12, "Library Annex", "08:00", "18:00"),
+                        createResource("Computer Lab A", "LABORATORY", 40, "Computing Building - Lab Wing", "08:00", "17:00"),
+                        createResource("Multimedia Equipment Kit", "EQUIPMENT", 5, "Equipment Store", "09:00", "16:00")
                 );
 
                 Set<String> existingNames = existingResources.stream()
@@ -64,13 +64,14 @@ public class ResourceDataSeeder {
         };
     }
 
-    private Resource createResource(String name, String type, int capacity, String location, String availabilityWindow) {
+    private Resource createResource(String name, String type, int capacity, String location, String availabilityStart, String availabilityEnd) {
         Resource resource = new Resource();
         resource.setName(name);
         resource.setType(type);
         resource.setCapacity(capacity);
         resource.setLocation(location);
-        resource.setAvailabilityWindow(availabilityWindow);
+        resource.setAvailabilityStart(availabilityStart);
+        resource.setAvailabilityEnd(availabilityEnd);
         resource.setStatus("ACTIVE");
         return resource;
     }
@@ -124,8 +125,13 @@ public class ResourceDataSeeder {
                         }
                     }
 
-                    if (isBlank(resource.getAvailabilityWindow())) {
-                        resource.setAvailabilityWindow(DEFAULT_AVAILABILITY_WINDOW);
+                    if (isBlank(resource.getAvailabilityStart())) {
+                        resource.setAvailabilityStart(DEFAULT_AVAILABILITY_START);
+                        changed = true;
+                    }
+
+                    if (isBlank(resource.getAvailabilityEnd())) {
+                        resource.setAvailabilityEnd(DEFAULT_AVAILABILITY_END);
                         changed = true;
                     }
 

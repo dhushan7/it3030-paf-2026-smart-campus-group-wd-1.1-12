@@ -5,6 +5,9 @@ import Navbar from './components/layout/Navbar';
 import CataloguePage from './pages/CataloguePage';
 import UserCataloguePage from './pages/UserCataloguePage';
 import BookingsPage from "./components/bookings/BookingsPage";
+import BookingFormStyled from "./components/bookings/BookingFormStyled";
+import BookingList from "./components/bookings/BookingList";
+import BookingRequests from "./components/bookings/BookingRequests";
 
 
 function App() {
@@ -23,11 +26,17 @@ function App() {
           <Route path="/settings" element={<div className="p-8 text-2xl font-bold">Settings Coming Soon...</div>} />
 
           {/* Booking routes */}
-          <Route path="/bookings" element={<BookingsPage />} />
+          {/* <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/bookings/new" element={<Navigate to="/bookings#new-booking" replace />} />
           <Route path="/bookings/mine" element={<Navigate to="/bookings#my-bookings" replace />} />
-          <Route path="/admin/bookings" element={<Navigate to="/bookings#admin-bookings" replace />} />
+          <Route path="/admin/bookings" element={<Navigate to="/bookings#admin-bookings" replace />} /> */}
           
+
+          {/* Booking routes */}
+          <Route path="/bookings" element={<Navigate to="/bookings/mine" replace />} />
+          <Route path="/bookings/new" element={<BookingFormStyled />} />
+          <Route path="/bookings/mine" element={<BookingList />} />
+          <Route path="/bookings/admin" element={<BookingRequests />} />
         </Routes>
       </main>
     </div>
