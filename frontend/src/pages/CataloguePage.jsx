@@ -86,7 +86,7 @@ const CataloguePage = () => {
     };
 
     return (
-        <div className="w-full font-sans animate-fade-in">
+        <div className="w-[82vw] font-sans animate-fade-in">
 
             {/* HEADER */}
             <header className="mb-8 p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

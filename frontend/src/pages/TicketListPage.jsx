@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ticketService } from '../api/ticketService';
 import TicketCard from '../components/tickets/TicketCard';
@@ -9,7 +9,8 @@ import { useAuth } from '../context/AuthContext';
 const STATUSES = ['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 
 export default function TicketListPage() {
-    const { isTechnician } = useAuth();
+    // Extracted isAdmin alongside isTechnician to handle role-based titles
+    const { isAdmin, isTechnician } = useAuth();
     const [tickets, setTickets]       = useState([]);
     const [filtered, setFiltered]     = useState([]);
     const [search, setSearch]         = useState('');
@@ -17,10 +18,20 @@ export default function TicketListPage() {
     const [loading, setLoading]       = useState(true);
 
     useEffect(() => {
+        setLoading(true);
+        
         ticketService.getAll()
-            .then(data => { setTickets(data); setFiltered(data); })
+            .then(data => { 
+                setTickets(data); 
+                setFiltered(data); 
+            })
+            .catch(error => {
+                console.error("Error loading tickets:", error);
+                setTickets([]);
+                setFiltered([]);
+            })
             .finally(() => setLoading(false));
-    }, []);
+    }, []); 
 
     useEffect(() => {
         let result = tickets;
@@ -36,21 +47,27 @@ export default function TicketListPage() {
         setFiltered(result);
     }, [tickets, search, status]);
 
+    // Determine header title based on user role
+    const getPageTitle = () => {
+        if (isAdmin) return 'All Company Tickets';
+        if (isTechnician) return 'Assigned Tickets';
+        return 'My Tickets';
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-white">
-                        {isTechnician ? 'Assigned Tickets' : 'My Tickets'}
+                        {getPageTitle()}
                     </h1>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="mt-1 text-sm text-gray-400">
                         {filtered.length} ticket{filtered.length !== 1 ? 's' : ''} found
                     </p>
                 </div>
                 <Link to="/tickets/new"
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600
-                                 hover:bg-purple-500 text-white text-sm font-medium transition">
+                      className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-500">
                     <Plus size={16} /> New Ticket
                 </Link>
             </div>
@@ -61,21 +78,19 @@ export default function TicketListPage() {
                     <Search size={16}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                     <input
-                        className="w-full rounded-xl border border-white/20 bg-white/5 pl-9 pr-4 py-2
-                                   text-sm text-white placeholder-gray-500 focus:outline-none
-                                   focus:border-purple-500 transition"
+                        className="w-full rounded-xl border border-white/20 bg-white/5 py-2 pl-9 pr-4 text-sm text-white placeholder-gray-500 transition focus:border-purple-500 focus:outline-none"
                         placeholder="Search tickets…"
                         value={search}
                         onChange={e => setSearch(e.target.value)} />
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex flex-wrap items-center gap-2">
                     {STATUSES.map(s => (
                         <button key={s}
                                 onClick={() => setStatus(s)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
+                                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition
                                             ${status === s
                                                 ? 'bg-purple-600 text-white'
-                                                : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'}`}>
+                                                : 'border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10'}`}>
                             {s.replace('_', ' ')}
                         </button>
                     ))}
@@ -85,11 +100,11 @@ export default function TicketListPage() {
             {/* List */}
             {loading ? (
                 <div className="flex justify-center py-20">
-                    <div className="h-8 w-8 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">
-                    <p className="text-4xl mb-3">📋</p>
+                <div className="py-20 text-center text-gray-500">
+                    <p className="mb-3 text-4xl">📋</p>
                     <p>No tickets found</p>
                 </div>
             ) : (

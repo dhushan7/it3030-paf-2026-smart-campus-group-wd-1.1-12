@@ -61,7 +61,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
 
         // Allow the standard HTTP methods PLUS "OPTIONS" (which fixes your Network Error)
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // Explicitly allow the browser to send Authorization headers
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));

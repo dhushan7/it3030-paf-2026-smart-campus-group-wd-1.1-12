@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tickets")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class TicketController {
 
     private final TicketService ticketService;
@@ -45,8 +45,7 @@ public class TicketController {
 
         return switch (user.getRole()) {
             case ADMIN -> ResponseEntity.ok(ticketService.getAllTickets());
-            case TECHNICIAN -> ResponseEntity.ok(
-                    ticketService.getTicketsByTechnician(user.getId()));
+            case TECHNICIAN -> ResponseEntity.ok(ticketService.getAllTickets());
             default -> ResponseEntity.ok(ticketService.getTicketsByUser(user.getId()));
         };
     }

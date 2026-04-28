@@ -20,33 +20,28 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
 
 export default function AdminDashboardPage() {
     const [analytics, setAnalytics] = useState(null);
-    const [users, setUsers]         = useState([]);
-    const [tickets, setTickets]     = useState([]);
-    const [loading, setLoading]     = useState(true);
+    const [tickets, setTickets] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         Promise.all([
             userService.getAnalytics(),
-            userService.getAll(),
             ticketService.getAll(),
-        ]).then(([a, u, t]) => {
+        ])
+        .then(([a, t]) => {
             setAnalytics(a);
-            setUsers(u);
-            setTickets(t.slice(0, 10)); // recent 10
-        }).finally(() => setLoading(false));
+            setTickets(t.slice(0, 10));
+        })
+        .finally(() => setLoading(false));
     }, []);
 
-    const changeRole = async (userId, role) => {
-        await userService.updateRole(userId, role);
-        const updated = await userService.getAll();
-        setUsers(updated);
-    };
-
-    if (loading) return (
-        <div className="flex justify-center py-20">
-            <div className="h-8 w-8 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="flex justify-center py-20">
+                <div className="h-8 w-8 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -62,11 +57,16 @@ export default function AdminDashboardPage() {
                     <StatCard icon={XCircle}     label="Rejected"       value={analytics.rejected}      color="bg-red-600" />
                     <StatCard icon={CheckCircle} label="Closed"         value={analytics.closed}        color="bg-gray-600" />
                     <StatCard icon={Users}       label="Total Users"    value={analytics.totalUsers}    color="bg-indigo-600" />
-                    <StatCard icon={BarChart3}   label="Resolution Rate"
-                              value={analytics.totalTickets
-                                  ? Math.round((analytics.resolved / analytics.totalTickets) * 100) + '%'
-                                  : 'N/A'}
-                              color="bg-teal-600" />
+                    <StatCard
+                        icon={BarChart3}
+                        label="Resolution Rate"
+                        value={
+                            analytics.totalTickets
+                                ? Math.round((analytics.resolved / analytics.totalTickets) * 100) + '%'
+                                : 'N/A'
+                        }
+                        color="bg-teal-600"
+                    />
                 </div>
             )}
 
@@ -75,6 +75,7 @@ export default function AdminDashboardPage() {
                 <div className="px-6 py-4 border-b border-white/10">
                     <h2 className="font-semibold text-white">Recent Tickets</h2>
                 </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
@@ -86,6 +87,7 @@ export default function AdminDashboardPage() {
                                 <th className="px-4 py-3">Created</th>
                             </tr>
                         </thead>
+
                         <tbody className="divide-y divide-white/5">
                             {tickets.map(t => (
                                 <tr key={t.id} className="hover:bg-white/5 transition">
@@ -107,52 +109,7 @@ export default function AdminDashboardPage() {
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
-                </div>
-            </div>
 
-            {/* User Management */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10">
-                    <h2 className="font-semibold text-white">User Management</h2>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="text-left text-gray-500 text-xs border-b border-white/10">
-                                <th className="px-6 py-3">Name</th>
-                                <th className="px-4 py-3">Email</th>
-                                <th className="px-4 py-3">Role</th>
-                                <th className="px-4 py-3">Change Role</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {users.map(u => (
-                                <tr key={u.id} className="hover:bg-white/5 transition">
-                                    <td className="px-6 py-3 text-white">{u.name}</td>
-                                    <td className="px-4 py-3 text-gray-400 text-xs">{u.email}</td>
-                                    <td className="px-4 py-3">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium
-                                            ${u.role === 'ADMIN' ? 'bg-purple-500/20 text-purple-300' :
-                                              u.role === 'TECHNICIAN' ? 'bg-blue-500/20 text-blue-300' :
-                                              'bg-gray-500/20 text-gray-300'}`}>
-                                            {u.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <select
-                                            defaultValue={u.role}
-                                            onChange={e => changeRole(u.id, e.target.value)}
-                                            className="rounded-lg border border-white/20 bg-white/10 px-2 py-1
-                                                       text-xs text-white focus:outline-none focus:border-purple-500">
-                                            <option value="USER">USER</option>
-                                            <option value="TECHNICIAN">TECHNICIAN</option>
-                                            <option value="ADMIN">ADMIN</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
                     </table>
                 </div>
             </div>

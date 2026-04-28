@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -48,7 +48,6 @@ public class NotificationController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-                                                    @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(notificationService.markAsRead(id, user.getId()));
     }
 

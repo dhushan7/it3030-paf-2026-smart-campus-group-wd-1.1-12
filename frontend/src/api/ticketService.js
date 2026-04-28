@@ -12,7 +12,11 @@ export const ticketService = {
         }).then(r => r.data);
     },
 
+    // For Admins / Technicians: Fetch all tickets in the system
     getAll: () => api.get('/tickets').then(r => r.data),
+
+    // For Regular Users: Fetch only their tickets
+    getMyTickets: () => api.get('/tickets/mine').then(r => r.data), // <-- ADD THIS LINE
 
     getById: (id) => api.get(`/tickets/${id}`).then(r => r.data),
 

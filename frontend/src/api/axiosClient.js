@@ -3,6 +3,7 @@ import axios from 'axios';
 // Create axios instance
 export const api = axios.create({
   baseURL: 'http://localhost:8087/api/v1',
+  withCredentials: true, // This tells the browser to send credentials (cookies, auth headers) with CORS requests
   headers: {
     'Content-Type': 'application/json'
   }

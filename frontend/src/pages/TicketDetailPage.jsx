@@ -13,7 +13,8 @@ const STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 export default function TicketDetailPage() {
     const { id }    = useParams();
     const navigate  = useNavigate();
-    const { user, isAdmin, isTechnician } = useAuth();
+    // Pulling user roles directly from context
+    const { isAdmin, isTechnician } = useAuth();
 
     const [ticket, setTicket]           = useState(null);
     const [technicians, setTechnicians] = useState([]);
@@ -24,22 +25,28 @@ export default function TicketDetailPage() {
     });
 
     const load = async () => {
-        const data = await ticketService.getById(id);
-        setTicket(data);
-        setStatusForm({
-            status: data.status,
-            resolutionNotes: data.resolutionNotes ?? '',
-            assignedTechnicianId: data.assignedTechnicianId ?? '',
-        });
-        setLoading(false);
+        try {
+            const data = await ticketService.getById(id);
+            setTicket(data);
+            setStatusForm({
+                status: data.status,
+                resolutionNotes: data.resolutionNotes ?? '',
+                assignedTechnicianId: data.assignedTechnicianId ?? '',
+            });
+        } catch (error) {
+            console.error("Failed to load ticket", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         load();
-        if (isAdmin || isTechnician) {
+        // Only fetch technicians if the user is an admin since only admins assign them
+        if (isAdmin) {
             userService.getTechnicians().then(setTechnicians).catch(() => {});
         }
-    }, [id]);
+    }, [id, isAdmin]);
 
     const handleStatusUpdate = async (e) => {
         e.preventDefault();
@@ -47,7 +54,11 @@ export default function TicketDetailPage() {
         try {
             await ticketService.updateStatus(id, statusForm);
             await load();
-        } finally { setUpdating(false); }
+        } catch (error) {
+            console.error("Failed to update ticket", error);
+        } finally { 
+            setUpdating(false); 
+        }
     };
 
     const canManage = isAdmin || isTechnician;
@@ -133,46 +144,59 @@ export default function TicketDetailPage() {
                 )}
             </div>
 
-            {/* Status Update — ADMIN / TECHNICIAN only */}
+            {/* Management Section — Dynamic based on Roles */}
             {canManage && (
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                    <h2 className="text-base font-semibold text-white mb-4">Update Status</h2>
+                    <h2 className="text-base font-semibold text-white mb-4">Manage Ticket</h2>
                     <form onSubmit={handleStatusUpdate} className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-xs text-gray-400 block mb-1.5">Status</label>
-                                <select
-                                    value={statusForm.status}
-                                    onChange={e => setStatusForm(f => ({ ...f, status: e.target.value }))}
-                                    className={selectClass}>
-                                    {STATUSES.map(s => (
-                                        <option key={s} value={s}>{s.replace('_', ' ')}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs text-gray-400 block mb-1.5">Assign Technician</label>
-                                <select
-                                    value={statusForm.assignedTechnicianId}
-                                    onChange={e => setStatusForm(f => ({ ...f, assignedTechnicianId: e.target.value }))}
-                                    className={selectClass}>
-                                    <option value="">— Unassigned —</option>
-                                    {technicians.map(t => (
-                                        <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
-                                    ))}
-                                </select>
-                            </div>
+                            
+                            {/* TECHNICIAN ONLY: Change Status */}
+                            {isTechnician && (
+                                <div>
+                                    <label className="text-xs text-gray-400 block mb-1.5">Status</label>
+                                    <select
+                                        value={statusForm.status}
+                                        onChange={e => setStatusForm(f => ({ ...f, status: e.target.value }))}
+                                        className={selectClass}>
+                                        {STATUSES.map(s => (
+                                            <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* ADMIN ONLY: Assign Technician */}
+                            {isAdmin && (
+                                <div>
+                                    <label className="text-xs text-gray-400 block mb-1.5">Assign Technician</label>
+                                    <select
+                                        value={statusForm.assignedTechnicianId}
+                                        onChange={e => setStatusForm(f => ({ ...f, assignedTechnicianId: e.target.value }))}
+                                        className={selectClass}>
+                                        <option value="">— Unassigned —</option>
+                                        {technicians.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <label className="text-xs text-gray-400 block mb-1.5">Resolution Notes</label>
-                            <textarea
-                                value={statusForm.resolutionNotes}
-                                onChange={e => setStatusForm(f => ({ ...f, resolutionNotes: e.target.value }))}
-                                rows={3}
-                                className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5
-                                           text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
-                                placeholder="Add resolution or progress notes…" />
-                        </div>
+
+                        {/* TECHNICIAN ONLY: Resolution Notes */}
+                        {isTechnician && (
+                            <div>
+                                <label className="text-xs text-gray-400 block mb-1.5">Resolution Notes</label>
+                                <textarea
+                                    value={statusForm.resolutionNotes}
+                                    onChange={e => setStatusForm(f => ({ ...f, resolutionNotes: e.target.value }))}
+                                    rows={3}
+                                    className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5
+                                               text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+                                    placeholder="Add resolution or progress notes…" />
+                            </div>
+                        )}
+                        
                         <button type="submit" disabled={updating}
                                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600
                                            hover:bg-purple-500 disabled:opacity-60 text-white text-sm transition">
