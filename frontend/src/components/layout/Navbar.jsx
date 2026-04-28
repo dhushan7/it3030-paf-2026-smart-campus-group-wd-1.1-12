@@ -34,6 +34,13 @@ const Navbar = () => {
           <NavLink className={navLinkClassName} to="/bookings">
             <ClipboardList size={18} /> Bookings
           </NavLink>
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
+          </Link>
+
+          <Link className="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors" to="/dashboard">
+            <Home size={18} /> Dashboard
+          </Link>
 
           <NavLink className={navLinkClassName} to="/settings">
             <Settings size={18} /> Settings
@@ -60,6 +67,10 @@ const Navbar = () => {
           <NavLink onClick={() => setOpen(false)} to="/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <LayoutGrid size={20} /> Catalogue
           </NavLink>
+          </Link>
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
+          </Link>
 
           <NavLink onClick={() => setOpen(false)} to="/bookings" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <ClipboardList size={20} /> Bookings
