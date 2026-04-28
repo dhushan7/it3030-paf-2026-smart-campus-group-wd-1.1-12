@@ -1,7 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { Toaster } from "react-hot-toast";
 import Navbar from './components/layout/Navbar';
+import CataloguePage from './pages/CataloguePage';
+import UserCataloguePage from './pages/UserCataloguePage';
 
 // Pages
 import LoginPage          from './pages/LoginPage';
@@ -52,6 +55,15 @@ function App() {
 
           {/* Fallback */}
           <Route path="*"               element={<Navigate to="/tickets" replace />} />
+      <Toaster position="top-center" reverseOrder={false} />
+      {/* pages */}
+      <main className="flex-grow pt-24 px-4 pb-12 w-full max-w-7xl mx-auto">
+        <Routes>
+          <Route path="/" element={<div className="p-8 text-2xl font-bold">SMART CAMPUS</div>} />
+          <Route path="/admin/catalogue" element={<CataloguePage />} />
+          <Route path="/catalogue" element={<UserCataloguePage />} />
+          <Route path="/dashboard" element={<div className="p-8 text-2xl font-bold">Dashboard Coming Soon...</div>} />
+          <Route path="/settings" element={<div className="p-8 text-2xl font-bold">Settings Coming Soon...</div>} />
         </Routes>
       </main>
     </div>

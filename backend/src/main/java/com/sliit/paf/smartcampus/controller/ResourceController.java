@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/resources")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ResourceController {
 
     private final ResourceService service;
@@ -35,6 +35,14 @@ public class ResourceController {
     @PutMapping("/{id}")
     public ResponseEntity<Resource> updateResource(@PathVariable String id, @Valid @RequestBody Resource resource) {
         return ResponseEntity.ok(service.updateResource(id, resource));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Resource> updateStatus(
+            @PathVariable String id,
+            @RequestParam String status) {
+
+        return ResponseEntity.ok(service.updateStatus(id, status));
     }
 
     @DeleteMapping("/{id}")
