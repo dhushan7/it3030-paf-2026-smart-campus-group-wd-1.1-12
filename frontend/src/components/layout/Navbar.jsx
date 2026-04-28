@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, LayoutGrid, Home, Settings } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
+import { Menu, X, LayoutGrid, Home, Settings, ClipboardList } from 'lucide-react';
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const navLinkClassName = ({ isActive }) =>
+    `flex items-center gap-2 transition-colors ${
+      isActive ? "text-white" : "text-gray-300 hover:text-purple-400"
+    }`;
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-[#0f1115]/80 backdrop-blur-xl border-b border-white/10">
@@ -19,10 +23,17 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <Link className="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors" to="/catalogue">
-            <LayoutGrid size={18} /> Catalogue
-          </Link>
+          <NavLink className={navLinkClassName} to="/dashboard">
+            <Home size={18} /> Dashboard
+          </NavLink>
 
+          <NavLink className={navLinkClassName} to="/catalogue">
+            <LayoutGrid size={18} /> Catalogue
+          </NavLink>
+
+          <NavLink className={navLinkClassName} to="/bookings">
+            <ClipboardList size={18} /> Bookings
+          </NavLink>
           <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <LayoutGrid size={20} /> Admin Catalogue
           </Link>
@@ -31,9 +42,9 @@ const Navbar = () => {
             <Home size={18} /> Dashboard
           </Link>
 
-          <Link className="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors" to="/settings">
+          <NavLink className={navLinkClassName} to="/settings">
             <Settings size={18} /> Settings
-          </Link>
+          </NavLink>
         </div>
 
         {/* Mobile Toggle Button */}
@@ -49,20 +60,25 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden px-6 pb-6 pt-2 space-y-4 bg-[#0f1115]/95 backdrop-blur-xl border-t border-white/10">
-          <Link onClick={() => setOpen(false)} to="/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+          <NavLink onClick={() => setOpen(false)} to="/dashboard" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <Home size={20} /> Dashboard
+          </NavLink>
+
+          <NavLink onClick={() => setOpen(false)} to="/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <LayoutGrid size={20} /> Catalogue
+          </NavLink>
           </Link>
           <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <LayoutGrid size={20} /> Admin Catalogue
           </Link>
 
-          <Link onClick={() => setOpen(false)} to="/dashboard" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
-            <Home size={20} /> Dashboard
-          </Link>
+          <NavLink onClick={() => setOpen(false)} to="/bookings" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <ClipboardList size={20} /> Bookings
+          </NavLink>
 
-          <Link onClick={() => setOpen(false)} to="/settings" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+          <NavLink onClick={() => setOpen(false)} to="/settings" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
             <Settings size={20} /> Settings
-          </Link>
+          </NavLink>
         </div>
       )}
     </nav>
