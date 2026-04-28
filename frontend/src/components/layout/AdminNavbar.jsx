@@ -80,6 +80,10 @@ export default function AdminNavbar() {
               <Calendar size={18} />
               <span>Bookings</span>
             </NavLink>
+            <NavLink to="/tickets" className={linkClass}>
+              <Ticket size={18} />
+              <span>Tickets</span>
+            </NavLink>
           </>
         )}
 
