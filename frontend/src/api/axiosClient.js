@@ -1,28 +1,45 @@
 import axios from 'axios';
 
+// Create axios instance
 export const api = axios.create({
-    baseURL: 'http://localhost:8087/api/v1',
-    headers: { 'Content-Type': 'application/json' },
+  baseURL: 'http://localhost:8087/api/v1',
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
-// Attach JWT token from localStorage on every request
-api.interceptors.request.use((config) => {
+// Interceptor: Attach JWT token
+api.interceptors.request.use(
+  (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
 
-// On 401, clear auth and redirect to login
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        }
-        return Promise.reject(error);
+    if (token) {
+      // Spring Boot expects: Bearer <token>
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor: Handle 401 globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error("Session expired or unauthorized. Redirecting to login...");
+
+      // Clear stored auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+
+      // Prevent redirect loop
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );

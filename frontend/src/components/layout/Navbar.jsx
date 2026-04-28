@@ -56,9 +56,9 @@ const Navbar = () => {
             <LayoutGrid size={20} /> Admin Catalogue
           </Link>
 
-          <Link className="flex items-center gap-2 text-gray-300 hover:text-purple-400 transition-colors" to="/dashboard">
-            <Home size={18} /> Dashboard
-          </Link>
+        {/* Right side: bell + auth */}
+        <div className="hidden md:flex items-center gap-3">
+          <NotificationBell />
 
           {isAuthenticated ? (
             <div className="flex items-center gap-3">

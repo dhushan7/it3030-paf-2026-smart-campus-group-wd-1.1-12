@@ -27,24 +27,22 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
-    /**
-     * Create a ticket with optional file attachments (multipart/form-data).
-     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Ticket> createTicket(
             @RequestPart("ticket") TicketRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal User user) throws IOException {
 
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Ticket ticket = ticketService.createTicket(user.getId(), request, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(ticket);
     }
 
-    /**
-     * GET /api/v1/tickets — ADMIN gets all, USER gets own, TECHNICIAN gets assigned.
-     */
     @GetMapping
     public ResponseEntity<List<Ticket>> getTickets(@AuthenticationPrincipal User user) {
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         return switch (user.getRole()) {
             case ADMIN -> ResponseEntity.ok(ticketService.getAllTickets());
             case TECHNICIAN -> ResponseEntity.ok(
@@ -55,18 +53,17 @@ public class TicketController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicket(@PathVariable String id,
-                                             @AuthenticationPrincipal User user) {
+                                            @AuthenticationPrincipal User user) {
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Ticket ticket = ticketService.getTicketById(id);
-        // Users can only see their own tickets; admins/technicians see all
+
         if (user.getRole().name().equals("USER") && !ticket.getUserId().equals(user.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(ticket);
     }
 
-    /**
-     * TECHNICIAN or ADMIN updates status / resolution notes.
-     */
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<Ticket> updateStatus(
@@ -74,13 +71,17 @@ public class TicketController {
             @RequestBody TicketStatusUpdateRequest request,
             @AuthenticationPrincipal User user) {
 
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         return ResponseEntity.ok(
                 ticketService.updateTicketStatus(id, request, user.getId()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(@PathVariable String id,
-                                              @AuthenticationPrincipal User user) {
+                                             @AuthenticationPrincipal User user) {
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         boolean isAdmin = user.getRole().name().equals("ADMIN");
         ticketService.deleteTicket(id, user.getId(), isAdmin);
         return ResponseEntity.noContent().build();
