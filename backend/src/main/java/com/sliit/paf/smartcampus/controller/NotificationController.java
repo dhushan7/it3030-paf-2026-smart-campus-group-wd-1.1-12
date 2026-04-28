@@ -48,6 +48,7 @@ public class NotificationController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+                                                    @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(notificationService.markAsRead(id, user.getId()));
     }
 

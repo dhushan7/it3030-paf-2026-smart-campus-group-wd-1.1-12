@@ -32,8 +32,15 @@ public class ResourceService {
             resource.setType(updatedResource.getType());
             resource.setCapacity(updatedResource.getCapacity());
             resource.setLocation(updatedResource.getLocation());
-            resource.setAvailabilityWindow(updatedResource.getAvailabilityWindow());
+            resource.setAvailabilityStart(updatedResource.getAvailabilityStart());
+            resource.setAvailabilityEnd(updatedResource.getAvailabilityEnd());
             resource.setStatus(updatedResource.getStatus());
+            return repository.save(resource);
+        }).orElseThrow(() -> new RuntimeException("Resource not found"));
+    }
+    public Resource updateStatus(String id, String status) {
+        return repository.findById(id).map(resource -> {
+            resource.setStatus(status);
             return repository.save(resource);
         }).orElseThrow(() -> new RuntimeException("Resource not found"));
     }

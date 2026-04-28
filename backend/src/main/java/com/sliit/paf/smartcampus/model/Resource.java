@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
 
-@Document(collection = "resources")
+@Document(collection = "resource")
 public class Resource {
 
     @Id
@@ -25,7 +25,8 @@ public class Resource {
     @NotBlank(message = "Location is required")
     private String location;
 
-    private String availabilityWindow;
+    private String availabilityStart;
+    private String availabilityEnd;
 
     private String status = "ACTIVE";
 
@@ -45,8 +46,11 @@ public class Resource {
     public String getLocation() {return location;}
     public void setLocation(String location) {this.location = location;}
 
-    public String getAvailabilityWindow() {return availabilityWindow;}
-    public void setAvailabilityWindow(String availabilityWindow) {this.availabilityWindow = availabilityWindow;}
+    public String getAvailabilityStart() {return availabilityStart;}
+    public void setAvailabilityStart(String availabilityStart) {this.availabilityStart = availabilityStart;}
+
+    public String getAvailabilityEnd() {return availabilityEnd;}
+    public void setAvailabilityEnd(String availabilityEnd) {this.availabilityEnd = availabilityEnd;}
 
     public String getStatus() {return status;}
     public void setStatus(String status) {this.status = status;}

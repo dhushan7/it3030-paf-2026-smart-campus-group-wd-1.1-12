@@ -52,6 +52,13 @@ const Navbar = () => {
         {/* Right side: bell + auth */}
         <div className="hidden md:flex items-center gap-3">
           <NotificationBell />
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
+          </Link>
+
+        {/* Right side: bell + auth */}
+        <div className="hidden md:flex items-center gap-3">
+          <NotificationBell />
 
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
@@ -115,6 +122,20 @@ const Navbar = () => {
               </Link>
             )}
           </div>
+          <Link onClick={() => setOpen(false)} to="/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Catalogue
+          </Link>
+          <Link onClick={() => setOpen(false)} to="/admin/catalogue" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <LayoutGrid size={20} /> Admin Catalogue
+          </Link>
+
+          <Link onClick={() => setOpen(false)} to="/dashboard" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <Home size={20} /> Dashboard
+          </Link>
+
+          <Link onClick={() => setOpen(false)} to="/settings" className="flex items-center gap-3 text-gray-300 hover:text-purple-400">
+            <Settings size={20} /> Settings
+          </Link>
         </div>
       )}
     </nav>
