@@ -1,42 +1,135 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import { Toaster } from "react-hot-toast";
 import Navbar from './components/layout/Navbar';
+
+// Pages
 import CataloguePage from './pages/CataloguePage';
 import UserCataloguePage from './pages/UserCataloguePage';
-import BookingsPage from "./components/bookings/BookingsPage";
+import LoginPage from './pages/LoginPage';
+import OAuth2CallbackPage from './pages/OAuth2CallbackPage';
+import TicketListPage from './pages/TicketListPage';
+import CreateTicketPage from './pages/CreateTicketPage';
+import TicketDetailPage from './pages/TicketDetailPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import ProfilePage from './pages/ProfilePage';
+
+// Bookings
 import BookingFormStyled from "./components/bookings/BookingFormStyled";
 import BookingList from "./components/bookings/BookingList";
 import BookingRequests from "./components/bookings/BookingRequests";
 
+/** Private Route */
+function PrivateRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+/** Admin Route */
+function AdminRoute({ children }) {
+  const { isAuthenticated, isAdmin } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/tickets" replace />;
+  return children;
+}
+
+/** Root Redirect */
+function RootRedirect() {
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (isAdmin) return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/tickets" replace />;
+}
 
 function App() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white">
+
       <Navbar />
       <Toaster position="top-center" reverseOrder={false} />
-      {/* pages */}
+
       <main className="flex-grow pt-24 px-4 pb-12 w-full max-w-7xl mx-auto">
         <Routes>
-         
-          <Route path="/" element={<div className="p-8 text-2xl font-bold">SMART CAMPUS</div>} />
-          <Route path="/admin/catalogue" element={<CataloguePage />} />
+
+          {/* ROOT */}
+          <Route path="/" element={<RootRedirect />} />
+
+          {/* AUTH */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
+
+          {/* DASHBOARD */}
+          <Route path="/dashboard" element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          } />
+
+          {/* CATALOGUE */}
           <Route path="/catalogue" element={<UserCataloguePage />} />
-          <Route path="/dashboard" element={<div className="p-8 text-2xl font-bold">Dashboard Coming Soon...</div>} />
-          <Route path="/settings" element={<div className="p-8 text-2xl font-bold">Settings Coming Soon...</div>} />
+          <Route path="/admin/catalogue" element={
+            <AdminRoute>
+              <CataloguePage />
+            </AdminRoute>
+          } />
 
-          {/* Booking routes */}
-          {/* <Route path="/bookings" element={<BookingsPage />} />
-          <Route path="/bookings/new" element={<Navigate to="/bookings#new-booking" replace />} />
-          <Route path="/bookings/mine" element={<Navigate to="/bookings#my-bookings" replace />} />
-          <Route path="/admin/bookings" element={<Navigate to="/bookings#admin-bookings" replace />} /> */}
-          
+          {/* BOOKINGS (SEPARATE PAGES - YOUR STYLE) */}
+          <Route path="/bookings/new" element={
+            <PrivateRoute>
+              <BookingFormStyled />
+            </PrivateRoute>
+          } />
 
-          {/* Booking routes */}
-          <Route path="/bookings" element={<Navigate to="/bookings/mine" replace />} />
-          <Route path="/bookings/new" element={<BookingFormStyled />} />
-          <Route path="/bookings/mine" element={<BookingList />} />
-          <Route path="/bookings/admin" element={<BookingRequests />} />
+          <Route path="/bookings/mine" element={
+            <PrivateRoute>
+              <BookingList />
+            </PrivateRoute>
+          } />
+
+          <Route path="/bookings/admin" element={
+            <AdminRoute>
+              <BookingRequests />
+            </AdminRoute>
+          } />
+
+          {/* TICKETS */}
+          <Route path="/tickets" element={
+            <PrivateRoute>
+              <TicketListPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/tickets/new" element={
+            <PrivateRoute>
+              <CreateTicketPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/tickets/:id" element={
+            <PrivateRoute>
+              <TicketDetailPage />
+            </PrivateRoute>
+          } />
+
+          {/* PROFILE */}
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <ProfilePage />
+            </PrivateRoute>
+          } />
+
+          {/* SETTINGS */}
+          <Route path="/settings" element={
+            <div className="p-8 text-2xl font-bold">
+              Settings Coming Soon...
+            </div>
+          } />
+
+          {/* FALLBACK */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </main>
     </div>
