@@ -49,13 +49,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userService.findById(userId);
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user, null, user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                // IMPORTANT FIX: Ensure user actually exists in DB before authenticating
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    user, null, user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println("JWT Filter: User ID from token not found in database.");
+                }
             }
-        } catch (RuntimeException ignored) {
-            // Invalid token — continue as unauthenticated
+        } catch (Exception e) {
+            // IMPORTANT FIX: Log the exact reason the token failed (expired, tampered, etc.)
+            System.out.println("JWT Verification failed: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
