@@ -15,23 +15,26 @@ import TicketDetailPage from './pages/TicketDetailPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProfilePage from './pages/ProfilePage';
 
-/** Protect routes (login required) */
+// Bookings
+import BookingFormStyled from "./components/bookings/BookingFormStyled";
+import BookingList from "./components/bookings/BookingList";
+import BookingRequests from "./components/bookings/BookingRequests";
+
+/** Private Route */
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
-/** Protect admin routes */
+/** Admin Route */
 function AdminRoute({ children }) {
   const { isAuthenticated, isAdmin } = useAuth();
-
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isAdmin) return <Navigate to="/tickets" replace />;
-
   return children;
 }
 
-/** Smart redirect for "/" */
+/** Root Redirect */
 function RootRedirect() {
   const { isAuthenticated, isAdmin } = useAuth();
 
@@ -43,18 +46,28 @@ function RootRedirect() {
 function App() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white">
-      <Navbar />
 
+      <Navbar />
       <Toaster position="top-center" reverseOrder={false} />
 
       <main className="flex-grow pt-24 px-4 pb-12 w-full max-w-7xl mx-auto">
         <Routes>
 
-          {/* Public */}
+          {/* ROOT */}
+          <Route path="/" element={<RootRedirect />} />
+
+          {/* AUTH */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
 
-          {/* Catalogue */}
+          {/* DASHBOARD */}
+          <Route path="/dashboard" element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          } />
+
+          {/* CATALOGUE */}
           <Route path="/catalogue" element={<UserCataloguePage />} />
           <Route path="/admin/catalogue" element={
             <AdminRoute>
@@ -62,7 +75,26 @@ function App() {
             </AdminRoute>
           } />
 
-          {/* User Routes */}
+          {/* BOOKINGS (SEPARATE PAGES - YOUR STYLE) */}
+          <Route path="/bookings/new" element={
+            <PrivateRoute>
+              <BookingFormStyled />
+            </PrivateRoute>
+          } />
+
+          <Route path="/bookings/mine" element={
+            <PrivateRoute>
+              <BookingList />
+            </PrivateRoute>
+          } />
+
+          <Route path="/bookings/admin" element={
+            <AdminRoute>
+              <BookingRequests />
+            </AdminRoute>
+          } />
+
+          {/* TICKETS */}
           <Route path="/tickets" element={
             <PrivateRoute>
               <TicketListPage />
@@ -81,30 +113,21 @@ function App() {
             </PrivateRoute>
           } />
 
+          {/* PROFILE */}
           <Route path="/profile" element={
             <PrivateRoute>
               <ProfilePage />
             </PrivateRoute>
           } />
 
-          {/* Admin */}
-          <Route path="/dashboard" element={
-            <AdminRoute>
-              <AdminDashboardPage />
-            </AdminRoute>
-          } />
-
-          {/* Settings */}
+          {/* SETTINGS */}
           <Route path="/settings" element={
             <div className="p-8 text-2xl font-bold">
               Settings Coming Soon...
             </div>
           } />
 
-          {/* Root redirect */}
-          <Route path="/" element={<RootRedirect />} />
-
-          {/* Fallback */}
+          {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>

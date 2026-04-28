@@ -14,7 +14,7 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
 
     if (token) {
-      // Spring Boot expects: Bearer <token>
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
 

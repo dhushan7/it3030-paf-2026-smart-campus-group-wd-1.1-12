@@ -16,3 +16,20 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+  color-scheme: dark;
+}
+
+.booking-number-input::-webkit-outer-spin-button,
+.booking-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.booking-number-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
