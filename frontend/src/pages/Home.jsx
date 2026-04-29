@@ -23,36 +23,6 @@ export default function Home() {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = {
-      name: e.target.name.value,
-      email: e.target.email.value,
-      message: e.target.message.value,
-    };
-
-    try {
-      const res = await fetch("http://localhost:8086/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        alert("Message sent successfully!");
-        e.target.reset();
-      } else {
-        alert("Failed to send message");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Error sending message");
-    }
-  };
-
   return (
     <div className="font-sans text-white">
 
@@ -190,91 +160,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PAGE 4: CONTACT */}
+      {/* PAGE 4: CONTACT (Updated layout without form) */}
       <section
         ref={contactRef}
         className="min-h-screen flex items-center justify-center px-6 py-12"
       >
-        <div className="max-w-6xl w-full grid md:grid-cols-2 gap-10">
+        <div className="max-w-5xl w-full flex flex-col items-center text-center gap-12">
 
-          {/* LEFT SIDE - INFO */}
-          <div className="space-y-6 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold text-white">Get in Touch</h2>
-            <p className="text-gray-400 text-lg">
-              Have questions about the platform or need immediate administrative support? Reach out to us anytime.
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+              Get in <span className="text-purple-400">Touch</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              Have questions about the platform or need immediate administrative support? Reach out to us anytime through the channels below.
             </p>
-
-            <div className="space-y-4 mt-4">
-
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm p-5 rounded-2xl shadow-sm border border-white/10 transition hover:bg-white/10">
-                <div className="bg-purple-500/20 text-purple-400 text-2xl p-4 rounded-full">📧</div>
-                <div>
-                  <p className="font-bold text-white">Email</p>
-                  <p className="text-gray-400">support@smartcampus.edu</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm p-5 rounded-2xl shadow-sm border border-white/10 transition hover:bg-white/10">
-                <div className="bg-purple-500/20 text-purple-400 text-2xl p-4 rounded-full">📞</div>
-                <div>
-                  <p className="font-bold text-white">IT Helpdesk</p>
-                  <p className="text-gray-400">+94 77 123 4567</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm p-5 rounded-2xl shadow-sm border border-white/10 transition hover:bg-white/10">
-                <div className="bg-purple-500/20 text-purple-400 text-2xl p-4 rounded-full">📍</div>
-                <div>
-                  <p className="font-bold text-white">Location</p>
-                  <p className="text-gray-400">Main Admin Block, Sri Lanka</p>
-                </div>
-              </div>
-
-            </div>
           </div>
 
-          {/* RIGHT SIDE - FORM */}
-          <div className="bg-[#0f1115]/60 backdrop-blur-xl shadow-2xl rounded-3xl p-8 border border-white/10">
+          {/* CONTACT CARDS - Centered Grid */}
+          <div className="grid md:grid-cols-3 gap-6 w-full">
+            {/* Contact Card 1 */}
+            <div className="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 hover:bg-white/10 hover:border-purple-500/30 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-purple-500/10 text-purple-400 text-4xl p-5 rounded-2xl group-hover:bg-purple-500/20 transition-colors shadow-[0_0_15px_rgba(147,51,234,0.1)]">
+                📧
+              </div>
+              <div>
+                <p className="font-bold text-white text-xl mb-1">Email</p>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">support@smartcampus.edu</p>
+              </div>
+            </div>
 
-            <h3 className="text-2xl font-bold mb-6 text-center text-white">
-              Send a Message
-            </h3>
+            {/* Contact Card 2 */}
+            <div className="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 hover:bg-white/10 hover:border-purple-500/30 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-purple-500/10 text-purple-400 text-4xl p-5 rounded-2xl group-hover:bg-purple-500/20 transition-colors shadow-[0_0_15px_rgba(147,51,234,0.1)]">
+                📞
+              </div>
+              <div>
+                <p className="font-bold text-white text-xl mb-1">IT Helpdesk</p>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">+94 77 123 4567</p>
+              </div>
+            </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5"
-            >
-              {/* NAME */}
-              <input
-                name="name"
-                className="w-full border border-white/10 bg-white/5 p-4 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
-                placeholder="Your Name"
-                required
-              />
-
-              {/* EMAIL */}
-              <input
-                type="email"
-                name="email"
-                className="w-full border border-white/10 bg-white/5 p-4 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
-                placeholder="Your Email"
-                required
-              />
-
-              {/* MESSAGE */}
-              <textarea
-                name="message"
-                className="w-full border border-white/10 bg-white/5 p-4 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500 resize-none"
-                rows="5"
-                placeholder="How can we help you?"
-                required
-              />
-
-              {/* BUTTON */}
-              <button className="w-full bg-purple-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-purple-500 transition-colors shadow-[0_0_15px_rgba(147,51,234,0.2)] hover:shadow-[0_0_25px_rgba(147,51,234,0.4)]">
-                Send Message 🚀
-              </button>
-            </form>
+            {/* Contact Card 3 */}
+            <div className="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/10 hover:bg-white/10 hover:border-purple-500/30 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="bg-purple-500/10 text-purple-400 text-4xl p-5 rounded-2xl group-hover:bg-purple-500/20 transition-colors shadow-[0_0_15px_rgba(147,51,234,0.1)]">
+                📍
+              </div>
+              <div>
+                <p className="font-bold text-white text-xl mb-1">Location</p>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">Main Admin Block, Sri Lanka</p>
+              </div>
+            </div>
 
           </div>
         </div>

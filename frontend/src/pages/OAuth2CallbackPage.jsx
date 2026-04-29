@@ -11,7 +11,7 @@ export default function OAuth2CallbackPage() {
         const token = params.get('token');
         if (token) {
             loginWithToken(token);
-            navigate('/tickets', { replace: true });
+            navigate('/user-dashboard', { replace: true });
         } else {
             navigate('/login', { replace: true });
         }

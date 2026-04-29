@@ -1,6 +1,7 @@
 package com.sliit.paf.smartcampus.config;
 
 import com.sliit.paf.smartcampus.security.JwtAuthFilter;
+import com.sliit.paf.smartcampus.security.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -18,41 +19,46 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler; // INJECT HANDLER
 
-    // Inject your custom JWT filter
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    // Update the constructor to accept the new handler
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 1. Enable CORS using the configuration bean below
+                // Enable CORS using the configuration bean below
                 .cors(Customizer.withDefaults())
 
-                // 2. Disable CSRF (safe because we use stateless JWTs)
+                // Disable CSRF (safe because we use stateless JWTs)
                 .csrf(csrf -> csrf.disable())
 
-                // 3. Make session STATELESS so Spring doesn't create JSESSIONID cookies
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Temporarily allow sessions ONLY if required.
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
-                // 4. Configure Endpoint Security
+                // Configure Endpoint Security
                 .authorizeHttpRequests(auth -> auth
-                        // Make Login and Registration public
                         .requestMatchers("/api/v1/auth/**").permitAll()
-
-                        // Require a valid token for EVERYTHING else (Tickets, Notifications, etc.)
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
-                // 5. Add our JWT filter BEFORE the standard Spring login filter
+                // ENABLE SUCCESS HANDLER
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                )
+
+                // Add JWT filter BEFORE the standard Spring login filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 6. Define the exact CORS rules
+    // Define the exact CORS rules
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -60,17 +66,17 @@ public class SecurityConfig {
         // Allow your React frontend
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
 
-        // Allow the standard HTTP methods PLUS "OPTIONS" (which fixes your Network Error)
+        // Allow the standard HTTP methods
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // Explicitly allow the browser to send Authorization headers
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
-        // Allow credentials (necessary if you ever pass cookies alongside tokens)
+        // Allow credentials
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Apply these rules to every endpoint in your app
+        // Apply these rules to every endpoint in the app
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
