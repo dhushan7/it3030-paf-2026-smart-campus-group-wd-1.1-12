@@ -12,11 +12,21 @@ export default function CommentSection({ ticketId }) {
     const bottomRef = useRef(null);
 
     const load = async () => {
-        const data = await commentService.getByTicket(ticketId);
-        setComments(data);
+        // 1. Add this safety check! Prevent the call if ticketId is missing.
+        if (!ticketId) return; 
+
+        try {
+            const data = await commentService.getByTicket(ticketId);
+            setComments(data);
+        } catch (error) {
+            console.error("Failed to fetch comments:", error);
+        }
     };
 
-    useEffect(() => { load(); }, [ticketId]);
+    // 2. Ensure ticketId is in the dependency array
+    useEffect(() => { 
+        load(); 
+    }, [ticketId]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

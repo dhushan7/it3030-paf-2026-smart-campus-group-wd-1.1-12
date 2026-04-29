@@ -7,7 +7,8 @@ import Navbar from './components/layout/Navbar';
 import AdminNavbar from './components/layout/AdminNavbar';
 
 // Pages
-import Home from './pages/Home'; // <--- IMPORT YOUR NEW HOME PAGE HERE
+import Home from './pages/Home'; 
+import Footer from './components/layout/Footer';
 import CataloguePage from './pages/CataloguePage';
 import UserCataloguePage from './pages/UserCataloguePage';
 import LoginPage from './pages/LoginPage';
@@ -191,6 +192,7 @@ function App() {
 
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
