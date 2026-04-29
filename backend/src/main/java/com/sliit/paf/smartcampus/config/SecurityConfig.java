@@ -1,6 +1,7 @@
 package com.sliit.paf.smartcampus.config;
 
 import com.sliit.paf.smartcampus.security.JwtAuthFilter;
+import com.sliit.paf.smartcampus.security.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -18,10 +19,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler; // <-- INJECT HANDLER
 
-    // Inject your custom JWT filter
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    // Update the constructor to accept the new handler
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
@@ -35,22 +38,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 // 3. Temporarily allow sessions ONLY if required.
-                // Spring NEEDS a temporary session to handle the Google redirect state.
-                // Your standard API calls with JWTs will still remain stateless!
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
                 // 4. Configure Endpoint Security
                 .authorizeHttpRequests(auth -> auth
-                        // Make Login, Registration, and OAuth2 endpoints public
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-
-                        // Require a valid token for EVERYTHING else (Tickets, Notifications, etc.)
                         .anyRequest().authenticated()
                 )
 
-                // 5. Enable OAuth2 Login (This stops the file download and redirects to Google)
-                .oauth2Login(Customizer.withDefaults())
+                // 5. ENABLE YOUR SUCCESS HANDLER HERE! <-- THIS IS THE FIX
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                )
 
                 // 6. Add our JWT filter BEFORE the standard Spring login filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
